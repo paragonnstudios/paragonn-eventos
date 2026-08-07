@@ -82,7 +82,7 @@ Rewards:
   Commands: # Lista de comandos que serão executados no vencedor.
     - "give @winner diamond 1"
 
-# Localizações. Você configurará essa seção usando o comando /evento setup hunter
+# Localizações. Você configurará essa seção usando o comando /evento setup nexus
 Locations:
   Lobby: []
   Entrance: []

@@ -51,8 +51,6 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import yclans.api.yClansAPI;
-import yclans.model.Clan;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,8 +71,6 @@ public class Nexus extends Evento {
     private final List<Player> dead_players = new ArrayList<>();
     private final List<Player> invincible_players = new ArrayList<>();
 
-    private yClansAPI yclans_api;
-
     private final int enable_pvp;
     private final int respawn_interval;
     private final int damage;
@@ -88,7 +84,6 @@ public class Nexus extends Evento {
 
     private final ArrayList<ClanPlayer> simpleclans_clans = new ArrayList<>();
     private final HashMap<MPlayer, Faction> massivefactions_factions = new HashMap<>();
-    private final HashMap<yclans.model.ClanPlayer, Clan> yclans_clans = new HashMap<>();
 
     public Nexus(YamlConfiguration config) {
 
@@ -134,10 +129,6 @@ public class Nexus extends Evento {
 
         // Registre o listener do evento.
         aEventos.getInstance().getServer().getPluginManager().registerEvents(listener, aEventos.getInstance());
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans")) {
-            yclans_api = yClansAPI.yclansapi;
-        }
 
     }
 
@@ -186,11 +177,11 @@ public class Nexus extends Evento {
                 ItemStack leggings = new ItemStack(Material.LEATHER_LEGGINGS, 1);
                 LeatherArmorMeta lg = (LeatherArmorMeta) leggings.getItemMeta();
                 lg.setColor(Color.BLUE);
-                leggings.setItemMeta(ch);
+                leggings.setItemMeta(lg);
                 ItemStack boots = new ItemStack(Material.LEATHER_BOOTS, 1);
                 LeatherArmorMeta bo = (LeatherArmorMeta) boots.getItemMeta();
                 bo.setColor(Color.BLUE);
-                boots.setItemMeta(ch);
+                boots.setItemMeta(bo);
                 p.getInventory().setHelmet(helmet);
                 p.getInventory().setChestplate(chestplate);
                 p.getInventory().setLeggings(leggings);
@@ -215,11 +206,11 @@ public class Nexus extends Evento {
                 ItemStack leggings = new ItemStack(Material.LEATHER_LEGGINGS, 1);
                 LeatherArmorMeta lg = (LeatherArmorMeta) leggings.getItemMeta();
                 lg.setColor(Color.RED);
-                leggings.setItemMeta(ch);
+                leggings.setItemMeta(lg);
                 ItemStack boots = new ItemStack(Material.LEATHER_BOOTS, 1);
                 LeatherArmorMeta bo = (LeatherArmorMeta) boots.getItemMeta();
                 bo.setColor(Color.RED);
-                boots.setItemMeta(ch);
+                boots.setItemMeta(bo);
                 p.getInventory().setHelmet(helmet);
                 p.getInventory().setChestplate(chestplate);
                 p.getInventory().setLeggings(leggings);
@@ -244,17 +235,6 @@ public class Nexus extends Evento {
             for (Player p : getPlayers()) {
                 massivefactions_factions.put(MPlayer.get(p), MPlayer.get(p).getFaction());
                 MPlayer.get(p).getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, true);
-            }
-        }
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans") && aEventos.getInstance().isHookedyClans()) {
-            for(Player p: getPlayers()) {
-                if(yclans_api == null || yclans_api.getPlayer(p) == null) continue;
-                yclans.model.ClanPlayer clan_player = yclans_api.getPlayer(p);
-                if(!clan_player.hasClan()) continue;
-                yclans_clans.put(clan_player, clan_player.getClan());
-                clan_player.getClan().setFriendlyFireAlly(true);
-                clan_player.getClan().setFriendlyFireMember(true);
             }
         }
 
@@ -304,21 +284,24 @@ public class Nexus extends Evento {
         ItemStack leggings = new ItemStack(Material.LEATHER_LEGGINGS, 1);
         LeatherArmorMeta lg = (LeatherArmorMeta) leggings.getItemMeta();
         lg.setColor(Color.BLACK);
-        leggings.setItemMeta(ch);
+        leggings.setItemMeta(lg);
         ItemStack boots = new ItemStack(Material.LEATHER_BOOTS, 1);
         LeatherArmorMeta bo = (LeatherArmorMeta) boots.getItemMeta();
         bo.setColor(Color.BLACK);
-        boots.setItemMeta(ch);
+        boots.setItemMeta(bo);
         captured.getInventory().setHelmet(helmet);
         captured.getInventory().setChestplate(chestplate);
         captured.getInventory().setLeggings(leggings);
         captured.getInventory().setBoots(boots);
 
-        // Mande a mensagem para o jogador.
+        // Mande a mensagem e som para o jogador.
         List<String> died_st = config.getStringList("Messages.Died");
         for(String s: died_st) {
             captured.sendMessage(IridiumColorAPI.process(s.replace("&", "§").replace("@name", config.getString("Evento.Title")).replace("@time", String.valueOf(respawn_interval))));
         }
+        try {
+            captured.playSound(captured.getLocation(), org.bukkit.Sound.NOTE_BASS, 1.0f, 0.5f);
+        } catch (Exception ignored) {}
 
         // Depois de alguns segundos, teleporte o capturado para o inicio.
         aEventos.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(aEventos.getInstance(), () -> {
@@ -339,11 +322,11 @@ public class Nexus extends Evento {
                 ItemStack leggings2 = new ItemStack(Material.LEATHER_LEGGINGS, 1);
                 LeatherArmorMeta lg2 = (LeatherArmorMeta) leggings2.getItemMeta();
                 lg2.setColor(Color.BLUE);
-                leggings2.setItemMeta(ch2);
+                leggings2.setItemMeta(lg2);
                 ItemStack boots2 = new ItemStack(Material.LEATHER_BOOTS, 1);
                 LeatherArmorMeta bo2 = (LeatherArmorMeta) boots2.getItemMeta();
                 bo2.setColor(Color.BLUE);
-                boots.setItemMeta(ch2);
+                boots2.setItemMeta(bo2);
                 captured.getInventory().setHelmet(helmet2);
                 captured.getInventory().setChestplate(chestplate2);
                 captured.getInventory().setLeggings(leggings2);
@@ -368,11 +351,11 @@ public class Nexus extends Evento {
                 ItemStack leggings2 = new ItemStack(Material.LEATHER_LEGGINGS, 1);
                 LeatherArmorMeta lg2 = (LeatherArmorMeta) leggings2.getItemMeta();
                 lg2.setColor(Color.RED);
-                leggings2.setItemMeta(ch2);
+                leggings2.setItemMeta(lg2);
                 ItemStack boots2 = new ItemStack(Material.LEATHER_BOOTS, 1);
                 LeatherArmorMeta bo2 = (LeatherArmorMeta) boots2.getItemMeta();
                 bo2.setColor(Color.RED);
-                boots.setItemMeta(ch2);
+                boots2.setItemMeta(bo2);
                 captured.getInventory().setHelmet(helmet2);
                 captured.getInventory().setChestplate(chestplate2);
                 captured.getInventory().setLeggings(leggings2);
@@ -467,6 +450,7 @@ public class Nexus extends Evento {
         for(String s : broadcast_messages) {
             aEventos.getInstance().getServer().broadcastMessage(IridiumColorAPI.process(s.replace("&", "§").replace("@winner", String.join(", ", winners)).replace("@name", config.getString("Evento.Title"))));
         }
+        playWinnerSound();
 
     }
 
@@ -491,17 +475,6 @@ public class Nexus extends Evento {
         if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("massivefactions") && aEventos.getInstance().isHookedMassiveFactions()) {
             massivefactions_factions.remove(MPlayer.get(p));
             if(getClanMembers(p) < 1) MPlayer.get(p).getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, false);
-        }
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans") && aEventos.getInstance().isHookedyClans() && !isOpen()) {
-            if(yclans_api == null || yclans_api.getPlayer(p) == null || isOpen()) return;
-            yclans.model.ClanPlayer clan_player = yclans_api.getPlayer(p);
-            if(getClanMembers(p) < 1) {
-                if(yclans_clans.get(clan_player) == null) return;
-                yclans_clans.get(clan_player).setFriendlyFireMember(false);
-                yclans_clans.get(clan_player).setFriendlyFireAlly(false);
-                yclans_clans.remove(clan_player);
-            }
         }
 
         blue_team.remove(p);
@@ -545,14 +518,8 @@ public class Nexus extends Evento {
             p.getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, false);
         }
 
-        for(yclans.model.ClanPlayer p: yclans_clans.keySet()) {
-            p.getClan().setFriendlyFireMember(false);
-            p.getClan().setFriendlyFireAlly(false);
-        }
-
         simpleclans_clans.clear();
         massivefactions_factions.clear();
-        yclans_clans.clear();
 
         // Remova o listener do evento e chame a função cancel.
         HandlerList.unregisterAll(listener);
@@ -585,13 +552,6 @@ public class Nexus extends Evento {
             return (int) massivefactions_factions.keySet()
                     .stream()
                     .filter(map -> map.getFaction() == MPlayer.get(p).getFaction())
-                    .count();
-        }
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans")) {
-            return (int) yclans_clans.keySet()
-                    .stream()
-                    .filter(map -> map.getClan() == yclans_api.getPlayer(p).getClan())
                     .count();
         }
 
