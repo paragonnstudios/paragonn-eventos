@@ -41,8 +41,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import yclans.api.yClansAPI;
-import yclans.model.Clan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,11 +55,8 @@ public class Killer extends Evento {
     private boolean pvp_enabled = false;
     private final boolean defined_items;
 
-    private yClansAPI yclans_api;
-
     private final ArrayList<ClanPlayer> simpleclans_clans = new ArrayList<>();
     private final HashMap<MPlayer, Faction> massivefactions_factions = new HashMap<>();
-    private final HashMap<yclans.model.ClanPlayer, Clan> yclans_clans = new HashMap<>();
 
     public Killer(YamlConfiguration config) {
 
@@ -70,10 +65,6 @@ public class Killer extends Evento {
         this.enable_pvp = config.getInt("Evento.Time");
         this.pickup_time = config.getInt("Evento.Pickup time");
         this.defined_items = config.getBoolean("Itens.Enabled");
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans")) {
-            yclans_api = yClansAPI.yclansapi;
-        }
 
     }
 
@@ -114,17 +105,6 @@ public class Killer extends Evento {
             for (Player p : getPlayers()) {
                 massivefactions_factions.put(MPlayer.get(p), MPlayer.get(p).getFaction());
                 MPlayer.get(p).getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, true);
-            }
-        }
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans") && aEventos.getInstance().isHookedyClans()) {
-            for(Player p: getPlayers()) {
-                if(yclans_api == null || yclans_api.getPlayer(p) == null) continue;
-                yclans.model.ClanPlayer clan_player = yclans_api.getPlayer(p);
-                if(!clan_player.hasClan()) continue;
-                yclans_clans.put(clan_player, clan_player.getClan());
-                clan_player.getClan().setFriendlyFireAlly(true);
-                clan_player.getClan().setFriendlyFireMember(true);
             }
         }
 
@@ -191,16 +171,6 @@ public class Killer extends Evento {
             if(getClanMembers(p) < 1) MPlayer.get(p).getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, false);
         }
 
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans") && aEventos.getInstance().isHookedyClans() && !isOpen()) {
-            if(yclans_api == null || yclans_api.getPlayer(p) == null || isOpen()) return;
-            yclans.model.ClanPlayer clan_player = yclans_api.getPlayer(p);
-            if(getClanMembers(p) < 1) {
-                yclans_clans.get(clan_player).setFriendlyFireMember(false);
-                yclans_clans.get(clan_player).setFriendlyFireAlly(false);
-                yclans_clans.remove(clan_player);
-            }
-        }
-
         PlayerLoseEvent lose = new PlayerLoseEvent(p, config.getString("filename").substring(0, config.getString("filename").length() - 4), getType());
         Bukkit.getPluginManager().callEvent(lose);
 
@@ -264,14 +234,8 @@ public class Killer extends Evento {
             p.getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, false);
         }
 
-        for(yclans.model.ClanPlayer p: yclans_clans.keySet()) {
-            p.getClan().setFriendlyFireMember(false);
-            p.getClan().setFriendlyFireAlly(false);
-        }
-
         simpleclans_clans.clear();
         massivefactions_factions.clear();
-        yclans_clans.clear();
 
         // Se o evento for de itens setados, limpe o inventário dos jogadores.
         if(defined_items) {
@@ -297,13 +261,6 @@ public class Killer extends Evento {
             return (int) massivefactions_factions.keySet()
                     .stream()
                     .filter(map -> map.getFaction() == MPlayer.get(p).getFaction())
-                    .count();
-        }
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans")) {
-            return (int) yclans_clans.keySet()
-                    .stream()
-                    .filter(map -> map.getClan() == yclans_api.getPlayer(p).getClan())
                     .count();
         }
 

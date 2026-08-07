@@ -44,8 +44,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import yclans.api.yClansAPI;
-import yclans.model.Clan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,8 +56,6 @@ public class Fight extends Evento {
     private final FightListener listener = new FightListener();
     final Random random = new Random();
 
-    private yClansAPI yclans_api;
-
     private Player fighter1, fighter2;
     private final int interval;
     private final int max_time;
@@ -71,7 +67,6 @@ public class Fight extends Evento {
 
     private final ArrayList<ClanPlayer> simpleclans_clans = new ArrayList<>();
     private final HashMap<MPlayer, Faction> massivefactions_factions = new HashMap<>();
-    private final HashMap<yclans.model.ClanPlayer, Clan> yclans_clans = new HashMap<>();
 
     public Fight(YamlConfiguration config) {
         super(config);
@@ -85,10 +80,6 @@ public class Fight extends Evento {
         entrance = new Location(world, config.getDouble("Locations.Entrance.x"), config.getDouble("Locations.Entrance.y"), config.getDouble("Locations.Entrance.z"), config.getLong("Locations.Entrance.Yaw"), config.getLong("Locations.Entrance.Pitch"));
         fight1 = new Location(world, config.getDouble("Locations.Pos1.x"), config.getDouble("Locations.Pos1.y"), config.getDouble("Locations.Pos1.z"), config.getLong("Locations.Pos1.Yaw"), config.getLong("Locations.Pos1.Pitch"));
         fight2 = new Location(world, config.getDouble("Locations.Pos2.x"), config.getDouble("Locations.Pos2.y"), config.getDouble("Locations.Pos2.z"), config.getLong("Locations.Pos2.Yaw"), config.getLong("Locations.Pos2.Pitch"));
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans")) {
-            yclans_api = yClansAPI.yclansapi;
-        }
 
     }
 
@@ -113,17 +104,6 @@ public class Fight extends Evento {
             for (Player p : getPlayers()) {
                 massivefactions_factions.put(MPlayer.get(p), MPlayer.get(p).getFaction());
                 MPlayer.get(p).getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, true);
-            }
-        }
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans") && aEventos.getInstance().isHookedyClans()) {
-            for(Player p: getPlayers()) {
-                if(yclans_api == null || yclans_api.getPlayer(p) == null) continue;
-                yclans.model.ClanPlayer clan_player = yclans_api.getPlayer(p);
-                if(!clan_player.hasClan()) continue;
-                yclans_clans.put(clan_player, clan_player.getClan());
-                clan_player.getClan().setFriendlyFireAlly(true);
-                clan_player.getClan().setFriendlyFireMember(true);
             }
         }
 
@@ -181,14 +161,8 @@ public class Fight extends Evento {
             p.getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, false);
         }
 
-        for(yclans.model.ClanPlayer p: yclans_clans.keySet()) {
-           p.getClan().setFriendlyFireMember(false);
-           p.getClan().setFriendlyFireAlly(false);
-        }
-
         simpleclans_clans.clear();
         massivefactions_factions.clear();
-        yclans_clans.clear();
 
         // Remova o listener do evento e chame a função cancel.
         HandlerList.unregisterAll(listener);
@@ -216,16 +190,6 @@ public class Fight extends Evento {
             if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("massivefactions") && aEventos.getInstance().isHookedMassiveFactions()) {
                 massivefactions_factions.remove(MPlayer.get(p));
                 if(getClanMembers(p) < 1) MPlayer.get(p).getFaction().setFlag(MFlag.ID_FRIENDLYFIRE, false);
-            }
-
-            if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans") && aEventos.getInstance().isHookedyClans() && !isOpen()) {
-                if(yclans_api == null || yclans_api.getPlayer(p) == null || isOpen()) return;
-                yclans.model.ClanPlayer clan_player = yclans_api.getPlayer(p);
-                if(getClanMembers(p) < 1) {
-                    yclans_clans.get(clan_player).setFriendlyFireMember(false);
-                    yclans_clans.get(clan_player).setFriendlyFireAlly(false);
-                    yclans_clans.remove(clan_player);
-                }
             }
 
             PlayerLoseEvent lose = new PlayerLoseEvent(p, config.getString("filename").substring(0, config.getString("filename").length() - 4), getType());
@@ -497,13 +461,6 @@ public class Fight extends Evento {
             return (int) massivefactions_factions.keySet()
                     .stream()
                     .filter(map -> map.getFaction() == MPlayer.get(p).getFaction())
-                    .count();
-        }
-
-        if(aEventos.getInstance().getConfig().getString("Hook").equalsIgnoreCase("yclans")) {
-            return (int) yclans_clans.keySet()
-                    .stream()
-                    .filter(map -> map.getClan() == yclans_api.getPlayer(p).getClan())
                     .count();
         }
 

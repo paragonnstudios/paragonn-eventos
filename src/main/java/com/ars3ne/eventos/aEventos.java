@@ -64,7 +64,6 @@ public class aEventos extends JavaPlugin {
     private Economy econ = null;
 
     private boolean hooked_massivefactions = false;
-    private boolean hooked_yclans = false;
     private boolean is_reloaded = true;
 
     private final EventoListener setup_listener = new EventoListener();
@@ -265,8 +264,8 @@ public class aEventos extends JavaPlugin {
     }
 
     private void setupAddons() {
-        if(!setupSimpleClans() && !setupMassiveFactions() && !setupyClans()) {
-            Bukkit.getConsoleSender().sendMessage("§e[aEventos] §cSimpleClans, MassiveFactions e yClans não encontrados.");
+        if(!setupSimpleClans() && !setupMassiveFactions()) {
+            Bukkit.getConsoleSender().sendMessage("§e[aEventos] §cSimpleClans e MassiveFactions não encontrados.");
         }
         if(!setupLegendChat()) {
             Bukkit.getConsoleSender().sendMessage("§e[aEventos] §cLegendChat não encontrado.");
@@ -300,13 +299,6 @@ public class aEventos extends JavaPlugin {
         Plugin factions = getServer().getPluginManager().getPlugin("Factions");
         if(factions == null) return false;
         hooked_massivefactions = true;
-        return true;
-    }
-
-    private boolean setupyClans() {
-        Plugin yclans = getServer().getPluginManager().getPlugin("yClans");
-        if(yclans == null) return false;
-        hooked_yclans = true;
         return true;
     }
 
@@ -346,8 +338,6 @@ public class aEventos extends JavaPlugin {
     public static CacheManager getCacheManager() { return cache; }
 
     public boolean isHookedMassiveFactions() { return this.hooked_massivefactions; }
-
-    public boolean isHookedyClans() { return this.hooked_yclans; }
 
     public static aEventos getInstance() {
         return (aEventos) Bukkit.getServer().getPluginManager().getPlugin("aEventos");

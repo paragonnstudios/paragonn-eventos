@@ -100,6 +100,57 @@ public class SignListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onPressurePlate(PlayerInteractEvent e) {
+        if (e.getAction() != Action.PHYSICAL) return;
+        if (evento == null) return;
+        if (!evento.getPlayers().contains(e.getPlayer())) return;
+
+        Block block = e.getClickedBlock();
+        if (block == null) return;
+        if (!block.getType().name().contains("PLATE")) return;
+
+        // Verificar se há uma placa de vitória/checkpoint acima da placa de pressão
+        Location plateLoc = block.getLocation();
+        Block above = plateLoc.clone().add(0, 1, 0).getBlock();
+        if (!above.getType().name().contains("SIGN")) return;
+
+        org.bukkit.block.Sign sign = (org.bukkit.block.Sign) above.getState();
+
+        // Verificar se é placa de vitória
+        List<String> victory = evento.getConfig().getStringList("Messages.Sign");
+        boolean isVictory = sign.getLine(0).equals(victory.get(0).replace("&", "§"));
+        if (isVictory) {
+            for (int i = 1; i < 4; i++) {
+                if (!sign.getLine(i).equals(victory.get(i).replace("&", "§"))) {
+                    isVictory = false;
+                    break;
+                }
+            }
+            if (isVictory) {
+                evento.winner(e.getPlayer());
+                return;
+            }
+        }
+
+        // Verificar se é placa de checkpoint
+        if (evento.notReturnOnDamage()) return;
+        List<String> checkpoint = evento.getConfig().getStringList("Messages.Checkpoint");
+        boolean isCheckpoint = sign.getLine(0).equals(checkpoint.get(0).replace("&", "§"));
+        if (isCheckpoint) {
+            for (int i = 1; i < 4; i++) {
+                if (!sign.getLine(i).equals(checkpoint.get(i).replace("&", "§"))) {
+                    isCheckpoint = false;
+                    break;
+                }
+            }
+            if (isCheckpoint) {
+                checkpoints.put(e.getPlayer(), plateLoc);
+                e.getPlayer().sendMessage(IridiumColorAPI.process(evento.getConfig().getString("Messages.Checkpoint saved").replace("&", "§").replace("@name", evento.getConfig().getString("Evento.Title"))));
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.LOW)
     public void onDamage(EntityDamageEvent e) {
 

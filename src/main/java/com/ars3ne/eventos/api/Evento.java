@@ -141,6 +141,7 @@ public class Evento implements EventoInterface{
                     for(String s : broadcast_messages) {
                         aEventos.getInstance().getServer().broadcastMessage(IridiumColorAPI.process(s.replace("&", "§").replace("@players", String.valueOf(Evento.this.players.size())).replace("@broadcasts", String.valueOf(calls)).replace("@name", config.getString("Evento.Title"))).replace("@money", NumberFormatter.letterFormat(money)));
                     }
+                    playBroadcastSound();
 
                     calls--;
                 }else if(Evento.this.happening){
@@ -152,6 +153,8 @@ public class Evento implements EventoInterface{
                         for(String s : broadcast_messages) {
                             aEventos.getInstance().getServer().broadcastMessage(IridiumColorAPI.process(s.replace("&", "§").replace("@name", config.getString("Evento.Title"))));
                         }
+
+                        playStartSound();
 
                         for (Player player : players) {
                             Evento.this.teleport(player, "entrance");
@@ -182,6 +185,30 @@ public class Evento implements EventoInterface{
                 }
             }
         }.runTaskTimer(aEventos.getInstance(), 0, config.getInt("Evento.Calls interval") * 20L);
+    }
+
+    protected void playBroadcastSound() {
+        try {
+            for (Player p : aEventos.getInstance().getServer().getOnlinePlayers()) {
+                p.playSound(p.getLocation(), org.bukkit.Sound.NOTE_PLING, 1.0f, 1.0f);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    protected void playStartSound() {
+        try {
+            for (Player p : aEventos.getInstance().getServer().getOnlinePlayers()) {
+                p.playSound(p.getLocation(), org.bukkit.Sound.NOTE_PLING, 1.0f, 1.5f);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    protected void playWinnerSound() {
+        try {
+            for (Player p : aEventos.getInstance().getServer().getOnlinePlayers()) {
+                p.playSound(p.getLocation(), org.bukkit.Sound.LEVEL_UP, 1.0f, 1.0f);
+            }
+        } catch (Exception ignored) {}
     }
 
     public void startBungeecord() {
