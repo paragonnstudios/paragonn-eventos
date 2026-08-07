@@ -1,14 +1,16 @@
 name: aEventos
-version: ${version}
+version: 1.5.2
 description: O seu plugin de eventos!
-
 author: Ars3ne
 website: https://github.com/paragonnstudios/paragonn-eventos
-
 main: com.ars3ne.eventos.aEventos
-softdepend: [LegendChat, SimpleClans, Vault, MassiveFactions, PlaceholderAPI]
+softdepend:
+  - LegendChat
+  - SimpleClans
+  - Vault
+  - MassiveFactions
+  - PlaceholderAPI
 api-version: 1.13
-
 commands:
   evento:
     description: Comando principal do plugin.
